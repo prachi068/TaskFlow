@@ -1,50 +1,53 @@
-import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
-import { connectDB } from './config/db.js';
-import userRouter from './routes/userRoute.js';
-import taskRouter from './routes/taskRoute.js';
+import express from "express";
+import cors from "cors";
+import "dotenv/config";
+import { connectDB } from "./config/db.js";
+import userRouter from "./routes/userRoute.js";
+import taskRouter from "./routes/taskRoute.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Middleware
-app.use(cors());
+// ✅ CORS configuration — only allow local frontend
+app.use(
+  cors({
+    origin: ["http://localhost:5173"], // frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  })
+);
+
+// ✅ Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-    // Health-check root route
-   app.get('/', (req, res) => {
-     res.send('API WORKING');
-    });
+// ✅ Health check route
+app.get("/", (req, res) => {
+  res.send("✅ Smart Task Management System Backend is running on localhost:4000");
+});
 
-    // Global error handler (catches both known and unknown errors)
+// ✅ Register routes after DB connects
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB connected");
+
+    app.use("/api/user", userRouter);
+    app.use("/api/tasks", taskRouter);
+
+    // ✅ Global error handler
     app.use((err, req, res, next) => {
-      console.error('Unhandled error:', err);
+      console.error("Unhandled error:", err);
       res.status(err.status || 500).json({
         success: false,
-        message: err.message || 'Internal Server Error',
+        message: err.message || "Internal Server Error",
       });
     });
 
-//  DB connect
-
- connectDB()
-   .then(() => {
-    console.log('✅ MongoDB connected');
-
-    // Routes (only registered after DB connected)
-    app.use('/api/user', userRouter);
-    app.use('/api/tasks', taskRouter);
-
-
-
-    // Start server
     app.listen(port, () => {
-      console.log(`Server started at http://localhost:${port}`);
+      console.log(`🚀 Server running locally at http://localhost:${port}`);
     });
   })
   .catch((err) => {
-    console.error('Failed to connect to DB:', err);
-    process.exit(1); // Exit process on db connect failure
+    console.error("❌ Failed to connect to MongoDB:", err);
+    process.exit(1);
   });

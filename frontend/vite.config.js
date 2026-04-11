@@ -1,16 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
-
-// https://vite.dev/config/
+// ✅ Correct config for deployment (Render / Netlify)
 export default defineConfig({
-  plugins: [react(), tailwindcss(),
-], 
+  plugins: [react(), tailwindcss()],
   server: {
-  proxy: {
-    "/api": "http://localhost:4000"
-  }
-},
-
-})
+    port: 5173,
+    // ❌ Remove localhost proxy (only for local dev)
+    // proxy: { "/api": "http://localhost:4000" },
+  },
+});

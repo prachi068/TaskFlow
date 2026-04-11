@@ -11,5 +11,5 @@ export const connectDB= async () => {
     console.error(err)
 });
 }   
-export default connectDB
+export default connectDB;
 

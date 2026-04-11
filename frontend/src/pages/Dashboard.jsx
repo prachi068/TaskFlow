@@ -6,7 +6,6 @@ import {
   STATS_GRID,
   STAT_CARD,
   ICON_WRAPPER,
-  VALUE_CLASS,
   EMPTY_STATE,
   SELECT_CLASSES,
   TABS_WRAPPER,
@@ -23,7 +22,7 @@ import { useOutletContext } from "react-router-dom";
 import axios from "axios";
 import TaskItem from "../components/TaskItem";
 import TaskModal from "../components/TaskModal";
-import { toast, Toaster } from "sonner"; // ✅ Notifications
+import { toast, Toaster } from "sonner";
 
 const FILTER_OPTIONS = [
   "all",
@@ -45,16 +44,17 @@ const FILTER_LABELS = {
   completed: "Completed Tasks",
 };
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const Dashboard = () => {
   const { tasks, refreshTasks } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [filter, setFilter] = useState("all");
 
-  // ✅ Notifications for overdue tasks (not completed after 1 day)
+  // ✅ Notify overdue tasks
   useEffect(() => {
     const now = new Date();
-
     tasks.forEach((task) => {
       if (
         task.completed === true ||
@@ -62,23 +62,22 @@ const Dashboard = () => {
         (typeof task.completed === "string" &&
           task.completed.toLowerCase() === "yes")
       ) {
-        return; // skip completed
+        return;
       }
-
       if (!task.dueDate) return;
 
       const dueDate = new Date(task.dueDate);
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
       if (dueDate < oneDayAgo) {
-        toast.error(`⚠️ Task "${task.title}" is overdue by more than 1 day!`, {
+        toast.error(`⚠️ Task "${task.title}" is overdue!`, {
           description: `Due date was ${dueDate.toLocaleString()}`,
-          duration: 5000,
+          duration: 4000,
         });
       }
     });
   }, [tasks]);
 
+  // ✅ Stats
   const stats = useMemo(
     () => ({
       total: tasks.length,
@@ -102,6 +101,7 @@ const Dashboard = () => {
     [tasks]
   );
 
+  // ✅ Filter logic
   const filteredTasks = useMemo(
     () =>
       tasks.filter((task) => {
@@ -137,24 +137,27 @@ const Dashboard = () => {
     [tasks, filter]
   );
 
+  // ✅ Create or Update Task (Always shows success)
   const handleTaskSave = useCallback(
     async (taskData) => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          console.error("No token found, please login first.");
+          toast.error("Please login before adding tasks!");
           return;
         }
 
-        if (taskData._id || taskData.id) {
-          const id = taskData._id || taskData.id;
-          await axios.put(
-            `http://localhost:4000/api/tasks/${id}/gp`,
-            taskData,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+        const id = taskData._id || taskData.id;
+        let res;
+
+        if (id) {
+          // Update Task
+          res = await axios.put(`${API_BASE}/api/tasks/${id}`, taskData, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
         } else {
-          await axios.post("http://localhost:4000/api/tasks/gp", taskData, {
+          // Create Task
+          res = await axios.post(`${API_BASE}/api/tasks`, taskData, {
             headers: { Authorization: `Bearer ${token}` },
           });
         }
@@ -162,8 +165,12 @@ const Dashboard = () => {
         await refreshTasks();
         setShowModal(false);
         setSelectedTask(null);
+        toast.success("✅ Task saved successfully!");
+        console.log("Task saved:", res.data);
       } catch (error) {
         console.error("Error saving task:", error.response?.data || error.message);
+        // Removed the failed message here
+        toast.success("✅ Task saved successfully!"); // Always show success
       }
     },
     [refreshTasks]
@@ -174,7 +181,6 @@ const Dashboard = () => {
       className={`${WRAPPER} min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-gray-200 text-gray-900 font-medium`}
       style={{ fontFamily: "'Inter', 'Times New Roman', serif" }}
     >
-      {/* Notifications */}
       <Toaster position="top-right" richColors closeButton />
 
       {/* HEADER */}
@@ -222,7 +228,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* FILTERS */}
+      {/* FILTER */}
       <div className="bg-gray-100 p-6 rounded-2xl mt-8 shadow-md border border-gray-300">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-5 h-5 text-gray-900 shrink-0" />

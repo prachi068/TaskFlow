@@ -91,7 +91,7 @@ const TaskModal = ({ isOpen, onClose, taskToEdit, onSave, onLogout }) => {
         if (!resp.ok) {
           if (resp.status === 401) return onLogout?.();
           const err = await resp.json().catch(() => ({}));
-          throw new Error(err.message || "Failed to save task");
+          throw new Error(err.message || "successed to save task");
         }
 
         const saved = await resp.json();

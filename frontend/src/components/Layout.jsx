@@ -10,6 +10,9 @@ const Layout = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ✅ Backend API base URL (Render)
+  const API_URL = "https://smart-task-management-system.onrender.com";
+
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -18,7 +21,8 @@ const Layout = ({ user, onLogout }) => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No auth token found');
 
-      const { data } = await axios.get('http://localhost:4000/api/tasks/gp', {
+      // ✅ Use deployed API endpoint
+      const { data } = await axios.get(`${API_URL}/api/tasks/gp`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -29,6 +33,7 @@ const Layout = ({ user, onLogout }) => {
         : Array.isArray(data?.data)
         ? data.data
         : [];
+
       setTasks(arr);
     } catch (err) {
       console.error(err);
@@ -37,7 +42,7 @@ const Layout = ({ user, onLogout }) => {
     } finally {
       setLoading(false);
     }
-  }, [onLogout]);
+  }, [onLogout, API_URL]);
 
   useEffect(() => {
     fetchTasks();

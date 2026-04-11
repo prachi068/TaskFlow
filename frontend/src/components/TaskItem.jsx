@@ -13,14 +13,15 @@ import axios from "axios";
 import { format } from "date-fns";
 import TaskModal from "./TaskModal";
 
-const API_BASE = "http://localhost:4000/api/tasks/";
+// ✅ Use deployed backend API
+const API_BASE = "https://smart-task-management-system.onrender.com/api/tasks/";
 
 const TaskItem = ({ task, onRefresh, onLogout, showCompleteCheckbox = true }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // ✅ keep completion status synced
+  // ✅ Keep completion status synced
   useEffect(() => {
     setIsCompleted(
       [true, 1, "yes"].includes(
@@ -119,9 +120,7 @@ const TaskItem = ({ task, onRefresh, onLogout, showCompleteCheckbox = true }) =>
               <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                 <h3
                   className={`font-semibold text-lg break-words ${
-                    isCompleted
-                      ? "text-gray-400 line-through"
-                      : "text-white"
+                    isCompleted ? "text-gray-400 line-through" : "text-white"
                   }`}
                 >
                   {task.title || "Untitled Task"}
