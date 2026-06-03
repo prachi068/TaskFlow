@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-export const connectDB= async () => {
-    await mongoose.connect('mongodb+srv://Prachi:Prachi123456@test.jgk2uvj.mongodb.net/',{
-    dbName:'task_db'
-    })
-        .then(() => {
-        console.log('DATABASE CONNECTED')
-    })
-    .catch((err) => {
-    console.error(err)
-});
-}   
-export default connectDB;
+export const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: process.env.DB_NAME,
+    });
 
+    console.log("DATABASE CONNECTED");
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export default connectDB;
