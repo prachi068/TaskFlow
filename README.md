@@ -1,4 +1,4 @@
-Smart Task Management System 
+ 
 SMART TASK MANAGEMENT SYSTEM
 
 Project Overview:
